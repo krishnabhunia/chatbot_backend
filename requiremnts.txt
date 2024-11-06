@@ -5,3 +5,6 @@ pymongo
 python-dotenv
 pydantic
 python-multipart
+langchain 
+langchain-community 
+nemoguardrails
