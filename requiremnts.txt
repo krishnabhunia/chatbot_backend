@@ -1,10 +1,8 @@
 websockets==13.1
-fastapi
+fastapi[all]
 uvicorn
 pymongo
 python-dotenv
 pydantic
 python-multipart
-langchain 
-langchain-community 
-nemoguardrails
+motor

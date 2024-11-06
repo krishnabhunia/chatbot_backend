@@ -11,6 +11,9 @@ class Message(BaseModel):
     file_url: Optional[str] = None
     image_url: Optional[str] = None
 
+class ConversationHistory(BaseModel):
+    
+
 class Conversation(BaseModel):
     user_id: str
     conversation_id: str = Field(default_factory=lambda: str(ObjectId()))
