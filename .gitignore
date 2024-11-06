@@ -3,3 +3,4 @@
 .venv/
 .venv_kri/
 .venv_adi/
+.env
