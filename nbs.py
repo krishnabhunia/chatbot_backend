@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 
-
 async def handler(websocket, path):
     message_queue = asyncio.Queue()
 
