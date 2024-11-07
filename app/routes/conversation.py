@@ -4,12 +4,14 @@ from app.database.mongodb import db
 
 router = APIRouter()
 
+
 # CREATE operation
 @router.post("/create_conversation")
 async def create_conversation(conversation: Conversation):
     data = conversation.dict()
     db.conversations.insert_one(data)
     return {"status": "Conversation created successfully"}
+
 
 # DELETE operation
 @router.delete("/delete_conversation/{user_id}/{conversation_id}")
@@ -18,6 +20,7 @@ async def delete_conversation(user_id: str, conversation_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return {"status": "Conversation deleted successfully"}
+
 
 # UPDATE operation
 @router.put("/update_conversation/{user_id}/{conversation_id}")
@@ -29,6 +32,7 @@ async def update_conversation(user_id: str, conversation_id: str, message: Messa
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return {"status": "Conversation updated successfully"}
+
 
 # READ operation
 @router.get("/read_conversations/{user_id}")
