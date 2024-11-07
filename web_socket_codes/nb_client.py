@@ -1,18 +1,16 @@
 import asyncio
 import websockets
-
+from aioconsole import ainput  # Import aioconsole for non-blocking input
 
 async def client():
     uri = "ws://localhost:6789"
     async with websockets.connect(uri) as websocket:
         message_queue = asyncio.Queue()
 
-        # Simulate sending messages every few seconds (replace with real input in production)
         async def simulate_input():
             while True:
-                message = input("Msg to server:")
+                message = await ainput("Msg to server: ")  # Non-blocking input
                 await message_queue.put(message)
-                await asyncio.sleep(1)  # Simulate a delay in sending messages
 
         async def send_messages():
             while True:
