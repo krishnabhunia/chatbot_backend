@@ -1,0 +1,2 @@
+uvicorn app.main:app --reload
+pipdeptree --freeze --warn silence | grep -E '^[a-zA-Z0-9\-_]+' > requirements.txt
