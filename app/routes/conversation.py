@@ -58,7 +58,7 @@ async def create_conversation(conversation: Conversation):
     if existing_conversation:
         logger.warning(f"Duplicate conversation ID for user {conversation.user_id}")
         raise HTTPException(status_code=400, detail="Conversation ID already exists for this user")
-    
+
     data = conversation.dict()
     db.conversations.insert_one(data)
     logger.info(f"Conversation created for user {conversation.user_id}")

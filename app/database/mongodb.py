@@ -9,10 +9,10 @@
 
 # TODO : Enhanced Code V1 :
 from pymongo import MongoClient
-import os
+# import os
 
 # MongoDB connection setup
-client: MongoClient = MongoClient("mongodb://<WINDOWS_IP>:27017")
+client = MongoClient("mongodb://localhost:27017/")  # type: MongoClient
 
 db = client.chatbot_db
 collection = db.conversations
