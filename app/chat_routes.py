@@ -33,13 +33,32 @@ async def create_chat(user_id: str, chat: Chat):
 # ADD a new message to an existing chat
 @router.put("/add_message/{user_id}/{chat_id}")
 async def add_message(user_id: str, chat_id: str, message: Message):
+    # Check if the user exists
+    user = db.chats.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if the chat exists for the user
+    chat = next((c for c in user["chats"] if c["chat_id"] == chat_id), None)
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found for this user")
+
+    # Check for duplicate message_id within the chat
+    if any(msg["message_id"] == message.message_id for msg in chat["messages"]):
+        raise HTTPException(status_code=400, detail="Message ID already exists in this chat")
+
+    # If everything is valid, add the message and update the chat's updated_at timestamp
     result = db.chats.update_one(
         {"user_id": user_id, "chats.chat_id": chat_id},
-        {"$push": {"chats.$.messages": message.dict()}, "$set": {"chats.$.updated_at": datetime.now()}}
+        {
+            "$push": {"chats.$.messages": message.dict()},
+            "$set": {"chats.$.updated_at": datetime.now()}
+        }
     )
-    
+
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Chat not found for this user")
+        raise HTTPException(status_code=404, detail="Failed to update chat with the new message")
+
     return {"status": "Message added to chat"}
 
 # GET all chats for a user
