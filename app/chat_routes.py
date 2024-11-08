@@ -1,9 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Security
 from app.models import Chat, Message
 from app.database import db
 from datetime import datetime
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt  # Install 'python-jose' package
+from typing import Optional
 
 router = APIRouter()  # Define the router instance here
+
+val = True
+
+
+# Define a decorator function to check if the user is authenticated
+def auth_test(func):
+    if val:
+        func()
+    else:
+        raise HTTPException(status_code=404, detail="Unathorized")
 
 
 # CREATE a new chat for a user
@@ -64,13 +77,47 @@ async def add_message(user_id: str, chat_id: str, message: Message):
     return {"status": "Message added to chat"}
 
 
-# GET all chats for a user
+# # GET all chats for a user
+# @auth_test
+# @router.get("/get_chats/{user_id}")
+# async def get_chats(user_id: str):
+#     user = db.chats.find_one({"user_id": user_id}, {"_id": 0})
+#     if not user:
+#         raise HTTPException(status_code=404, detail="No chats found for this user")
+#     return user
+
+###
+
+# Secret key for encoding/decoding the JWT (use environment variable in production)
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        # Decode the JWT token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: Optional[str] = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        return user_id
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
 @router.get("/get_chats/{user_id}")
-async def get_chats(user_id: str):
+async def get_chats(user_id: str, current_user: str = Depends(get_current_user)):
+    # Authorization: Ensure the user_id matches the authenticated user
+    if current_user != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this user's chats")
+
     user = db.chats.find_one({"user_id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="No chats found for this user")
+    
     return user
+
+###
 
 
 # GET all messages in a specific chat
