@@ -10,3 +10,9 @@ timeout==0.1.2
 uvicorn==0.32.0
 websocket==0.2.1
 websockets==13.1
+
+fastapi
+uvicorn
+pydantic
+motor
+python-dotenv
