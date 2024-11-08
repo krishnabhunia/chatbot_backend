@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends, Security
+from fastapi import APIRouter, HTTPException, Depends
 from app.models import Chat, Message
 from app.database import db
 from datetime import datetime
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt  # Install 'python-jose' package
-from typing import Optional
+from functools import wraps
+
 
 router = APIRouter()  # Define the router instance here
 
@@ -89,32 +90,43 @@ async def add_message(user_id: str, chat_id: str, message: Message):
 ###
 
 # Secret key for encoding/decoding the JWT (use environment variable in production)
-SECRET_KEY = "your_secret_key"
+from functools import wraps
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+
+SECRET_KEY = "abc"  # Secret key for JWT
 ALGORITHM = "HS256"
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+val = False
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    try:
-        # Decode the JWT token
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: Optional[str] = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-        return user_id
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
 
+# Authentication and Authorization Decorator
+def auth_required(func):
+    def wrapper(*args, **kwargs):
+        val = False
+        try:
+            if val:
+                func(*args, **kwargs)
+            else:
+                raise HTTPException(status_code=404, detail="Unauthorized")
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return func(*args, **kwargs)
+    return wrapper
+
+def a():
+    return False
+
+# Example usage with FastAPI route
+@auth_required  # Apply the decorator
 @router.get("/get_chats/{user_id}")
-async def get_chats(user_id: str, current_user: str = Depends(get_current_user)):
-    # Authorization: Ensure the user_id matches the authenticated user
-    if current_user != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this user's chats")
-
+async def get_chats(user_id: str):
+    if a():
+        raise HTTPException(status_code=401, detail="Invalid token")
     user = db.chats.find_one({"user_id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="No chats found for this user")
-    
     return user
 
 ###
